@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RefillRx — GLP-1 subscription retention | Wellis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#08080A;
+  --surface:#101013;
+  --surface-2:#17171B;
+  --hairline:#232328;
+  --hairline-soft:#1B1B1F;
+  --chalk:#F7F7F8;
+  --ash:#8C8C96;
+  --slate:#5A5A64;
+  --signal:#6E7BFF;
+  --signal-dim:rgba(110,123,255,.14);
+  --ember:#E2593F;
+  --ember-dim:rgba(226,89,63,.14);
+  --amber:#C9963F;
+  --mint:#4FA88A;
+  --display:'Poppins',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--display);
+  background:var(--void);
+  color:var(--chalk);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(900px 620px at 92% -6%, rgba(110,123,255,.16) 0%, transparent 62%),
+    radial-gradient(760px 520px at 4% 108%, rgba(110,123,255,.07) 0%, transparent 60%),
+    radial-gradient(420px 320px at 100% 46%, rgba(226,89,63,.05) 0%, transparent 65%);
+}
+.edge-dot{position:fixed;top:44%;right:6px;width:5px;height:5px;border-radius:50%;background:var(--ember);z-index:3;box-shadow:0 0 12px rgba(226,89,63,.8)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:6px}
+
+/* ── nav ── */
+nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(8,8,10,.78);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--hairline-soft);
+}
+.nav-in{max-width:1440px;margin:0 auto;padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:flex;align-items:center;gap:.65rem}
+.brand svg{width:26px;height:26px}
+.brand-name{font-size:1.05rem;font-weight:600;letter-spacing:-.02em}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{color:var(--ash);text-decoration:none;font-size:.85rem;font-weight:400;transition:color .2s}
+.nav-links a:hover{color:var(--chalk)}
+.pill-btn{
+  background:var(--chalk);color:#0B0B0D;border:none;
+  padding:.6rem 1.35rem;border-radius:999px;
+  font-family:var(--display);font-size:.82rem;font-weight:500;
+  cursor:pointer;transition:transform .18s,opacity .18s;
+}
+.pill-btn:hover{transform:translateY(-1px);opacity:.9}
+.pill-btn.ghost{background:transparent;color:var(--chalk);border:1px solid var(--hairline)}
+.pill-btn.ghost:hover{border-color:var(--slate);background:rgba(255,255,255,.03)}
+
+/* ── hero ── */
+.wrap{max-width:1440px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+.hero{padding:5.5rem 0 3rem;text-align:center}
+.eyebrow{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--slate);margin-bottom:1.6rem;
+}
+.hero h1{
+  font-size:clamp(2.6rem,6.2vw,5.1rem);font-weight:600;letter-spacing:-.045em;line-height:.98;
+  margin-bottom:1.5rem;
+}
+.hero h1 em{font-style:normal;color:var(--slate)}
+.hero p{
+  color:var(--ash);font-size:1.06rem;font-weight:300;line-height:1.6;
+  max-width:62ch;margin:0 auto 2.2rem;
+}
+.hero-cta{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+
+/* ── controls ── */
+.controls{
+  display:flex;gap:1.6rem;align-items:center;flex-wrap:wrap;
+  padding:1.1rem 0;margin-top:2.5rem;
+  border-top:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline-soft);
+}
+.ctl-group{display:flex;align-items:center;gap:.6rem}
+.ctl-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--slate)}
+.seg{display:flex;gap:.3rem;background:var(--surface);border:1px solid var(--hairline-soft);border-radius:999px;padding:.22rem}
+.seg button{
+  background:transparent;border:none;color:var(--ash);
+  font-family:var(--display);font-size:.78rem;font-weight:400;
+  padding:.4rem .9rem;border-radius:999px;cursor:pointer;transition:all .2s;
+}
+.seg button:hover{color:var(--chalk)}
+.seg button.on{background:var(--surface-2);color:var(--chalk);font-weight:500;box-shadow:inset 0 0 0 1px var(--hairline)}
+.ctl-spacer{margin-left:auto;display:flex;align-items:center;gap:.9rem}
+.freshness{font-family:var(--mono);font-size:.68rem;color:var(--slate)}
+.freshness b{color:var(--mint);font-weight:400}
+
+/* ── grid ── */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:2rem 0 4rem}
+.span-2{grid-column:1/-1}
+@media(max-width:1080px){.grid{grid-template-columns:1fr}.span-2{grid-column:auto}}
+
+.panel{
+  background:var(--surface);border:1px solid var(--hairline-soft);border-radius:18px;overflow:hidden;
+}
+.panel-head{
+  padding:1.15rem 1.4rem;border-bottom:1px solid var(--hairline-soft);
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+}
+.panel-title{font-size:.94rem;font-weight:500;letter-spacing:-.01em}
+.panel-sub{font-family:var(--mono);font-size:.66rem;color:var(--slate);letter-spacing:.05em}
+.panel-body{padding:1.4rem}
+
+/* ── kpis ── */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--hairline-soft);border:1px solid var(--hairline-soft);border-radius:18px;overflow:hidden}
+@media(max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);padding:1.5rem 1.4rem}
+.kpi-label{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);margin-bottom:.85rem}
+.kpi-val{font-size:2.15rem;font-weight:500;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums;transition:color .3s}
+.kpi-val span{font-size:1rem;color:var(--slate);font-weight:400;letter-spacing:0}
+.kpi-delta{font-family:var(--mono);font-size:.68rem;margin-top:.7rem;display:flex;align-items:center;gap:.35rem}
+.up{color:var(--mint)} .down{color:var(--ember)} .flat{color:var(--slate)}
+
+/* ── titration ladder (signature) ── */
+.ladder-wrap{position:relative}
+#ladder{width:100%;height:auto;display:block;overflow:visible}
+.plateau{cursor:pointer;transition:opacity .2s}
+.plateau:hover{opacity:.75}
+.ladder-legend{display:flex;gap:1.6rem;flex-wrap:wrap;margin-top:1.2rem;padding-top:1.1rem;border-top:1px solid var(--hairline-soft)}
+.lg{display:flex;align-items:center;gap:.5rem;font-size:.74rem;color:var(--ash);font-weight:300}
+.lg i{width:16px;height:3px;border-radius:2px;display:block}
+.tip{
+  position:fixed;pointer-events:none;opacity:0;transition:opacity .15s;z-index:99;
+  background:#000;border:1px solid var(--hairline);border-radius:10px;padding:.7rem .85rem;
+  font-family:var(--mono);font-size:.7rem;line-height:1.7;box-shadow:0 20px 50px rgba(0,0,0,.7);
+}
+.tip.on{opacity:1}
+.tip b{color:var(--chalk);font-weight:500}
+.tip s{text-decoration:none;color:var(--ember)}
+
+/* ── cohort heatmap ── */
+.hm{display:grid;gap:3px;font-family:var(--mono)}
+.hm-row{display:grid;grid-template-columns:78px repeat(7,1fr);gap:3px;align-items:center}
+.hm-h{font-size:.6rem;color:var(--slate);text-align:center;letter-spacing:.06em;padding-bottom:.3rem}
+.hm-lab{font-size:.66rem;color:var(--ash);letter-spacing:.02em}
+.hm-lab small{color:var(--slate);display:block;font-size:.56rem}
+.hm-c{
+  aspect-ratio:2.1/1;border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-size:.66rem;font-weight:500;cursor:default;transition:transform .15s;
+}
+.hm-c:hover{transform:scale(1.06)}
+.hm-c.empty{background:var(--surface-2);opacity:.28}
+
+/* ── stacked bars ── */
+.sb-row{display:grid;grid-template-columns:64px 1fr 92px;gap:.9rem;align-items:center;margin-bottom:.55rem}
+.sb-lab{font-family:var(--mono);font-size:.68rem;color:var(--ash)}
+.sb-track{height:22px;border-radius:5px;overflow:hidden;display:flex;background:var(--surface-2)}
+.sb-seg{height:100%;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.sb-val{font-family:var(--mono);font-size:.66rem;color:var(--slate);text-align:right}
+
+/* ── line chart ── */
+#nrr{width:100%;height:auto;display:block;overflow:visible}
+
+/* ── sql panel ── */
+.tabs{display:flex;gap:.3rem;background:var(--surface-2);border-radius:999px;padding:.22rem}
+.tabs button{background:transparent;border:none;color:var(--slate);font-family:var(--mono);font-size:.68rem;padding:.35rem .8rem;border-radius:999px;cursor:pointer;transition:all .2s}
+.tabs button.on{background:var(--surface);color:var(--chalk);box-shadow:inset 0 0 0 1px var(--hairline)}
+pre{
+  font-family:var(--mono);font-size:.72rem;line-height:1.85;color:var(--ash);
+  background:var(--void);border:1px solid var(--hairline-soft);border-radius:12px;
+  padding:1.1rem 1.2rem;overflow-x:auto;max-height:340px;
+}
+.k{color:var(--signal)} .s{color:var(--mint)} .c{color:var(--slate);font-style:italic} .f{color:var(--amber)}
+
+/* ── build overlay ── */
+.build{
+  position:fixed;inset:0;z-index:200;background:rgba(8,8,10,.96);backdrop-filter:blur(8px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;
+}
+.build.on{display:flex}
+.build-h{font-size:1.35rem;font-weight:500;letter-spacing:-.03em}
+.build-s{font-family:var(--mono);font-size:.75rem;color:var(--slate);min-height:1.2em}
+.build-bar{width:300px;height:2px;background:var(--hairline);border-radius:2px;overflow:hidden}
+.build-fill{height:100%;width:0;background:var(--signal);transition:width .25s linear}
+.dbt-dots{display:flex;gap:5px}
+.dbt-dots i{width:5px;height:5px;border-radius:50%;background:var(--hairline);transition:background .3s}
+.dbt-dots i.done{background:var(--mint)}
+
+.foot{padding:2.5rem 0 4rem;border-top:1px solid var(--hairline-soft);color:var(--slate);font-size:.76rem;font-weight:300;line-height:1.8}
+.foot b{color:var(--ash);font-weight:400}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="edge-dot"></div>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M6 22c0-6 4-11 10-11s10 5 10 11" stroke="#6E7BFF" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M6 22c4 0 5-4 10-4s6 4 10 4" stroke="#F7F7F8" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="16" cy="7" r="2.4" fill="#E2593F"/>
+      </svg>
+      <span class="brand-name">RefillRx</span>
+    </div>
+    <div class="nav-links">
+      <a href="#ladder-p">Titration</a>
+      <a href="#cohort-p">Cohorts</a>
+      <a href="#nrr-p">Retention</a>
+      <a href="#sql-p">Models</a>
+    </div>
+    <button class="pill-btn" onclick="rebuild()">Rebuild models</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Wellis · Subscription analytics</div>
+    <h1>Retention isn't monthly.<br><em>It's per milligram.</em></h1>
+    <p>A GLP-1 subscription lives or dies on the dose ladder. RefillRx models refill behaviour by titration step instead of by billing cycle — so you can see exactly which milligram people quit at, and how much revenue walks out with them.</p>
+    <div class="hero-cta">
+      <button class="pill-btn" onclick="document.getElementById('ladder-p').scrollIntoView()">Explore the ladder</button>
+      <button class="pill-btn ghost" onclick="document.getElementById('sql-p').scrollIntoView()">Read the models</button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="ctl-group">
+      <span class="ctl-label">Treatment</span>
+      <div class="seg" id="segProduct">
+        <button class="on" data-v="all">All</button>
+        <button data-v="wegovy">Wegovy</button>
+        <button data-v="ozempic">Ozempic</button>
+        <button data-v="mounjaro">Mounjaro</button>
+      </div>
+    </div>
+    <div class="ctl-group">
+      <span class="ctl-label">Market</span>
+      <div class="seg" id="segMarket">
+        <button class="on" data-v="all">NL + DE</button>
+        <button data-v="nl">NL</button>
+        <button data-v="de">DE</button>
+      </div>
+    </div>
+    <div class="ctl-spacer">
+      <span class="freshness">firmhouse_subscriptions · <b>fresh 14m ago</b></span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="kpis span-2">
+      <div class="kpi">
+        <div class="kpi-label">Refill rate · month 3</div>
+        <div class="kpi-val" id="k1">—<span>%</span></div>
+        <div class="kpi-delta up" id="k1d">▲ 0.0 pts vs prior cohort</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Refill rate · month 6</div>
+        <div class="kpi-val" id="k2">—<span>%</span></div>
+        <div class="kpi-delta down" id="k2d">▼ 0.0 pts vs prior cohort</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Net revenue retention</div>
+        <div class="kpi-val" id="k3">—<span>%</span></div>
+        <div class="kpi-delta up" id="k3d">▲ dose escalation offsets churn</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Paused → resumed</div>
+        <div class="kpi-val" id="k4">—<span>%</span></div>
+        <div class="kpi-delta flat" id="k4d">within 90 days</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Median doses to churn</div>
+        <div class="kpi-val" id="k5">—<span> pens</span></div>
+        <div class="kpi-delta flat" id="k5d">across all exits</div>
+      </div>
+    </div>
+
+    <div class="panel span-2" id="ladder-p">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Titration ladder</div>
+          <div class="panel-sub" id="ladderSub">where the cohort actually falls off</div>
+        </div>
+        <span class="panel-sub">plateau width = weeks at dose · drop = customers lost</span>
+      </div>
+      <div class="panel-body">
+        <div class="ladder-wrap"><svg id="ladder" viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <div class="ladder-legend">
+          <span class="lg"><i style="background:#6E7BFF"></i>Surviving cohort</span>
+          <span class="lg"><i style="background:#E2593F"></i>Lost at dose step</span>
+          <span class="lg"><i style="background:#C9963F"></i>Paused, not cancelled</span>
+          <span class="lg" style="margin-left:auto;color:var(--slate)">Hover any plateau for the step detail</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="cohort-p">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Cohort refill retention</div>
+          <div class="panel-sub">start month × months on treatment</div>
+        </div>
+      </div>
+      <div class="panel-body"><div class="hm" id="hm"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Pause is not churn</div>
+          <div class="panel-sub">exit reason mix by month on treatment</div>
+        </div>
+      </div>
+      <div class="panel-body"><div id="sb"></div>
+        <div class="ladder-legend" style="margin-top:1rem">
+          <span class="lg"><i style="background:#4FA88A"></i>Active</span>
+          <span class="lg"><i style="background:#C9963F"></i>Paused</span>
+          <span class="lg"><i style="background:#E2593F"></i>Cancelled</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel span-2" id="nrr-p">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Revenue retention vs customer retention</div>
+          <div class="panel-sub">the gap is dose escalation paying for churn</div>
+        </div>
+        <span class="panel-sub" id="nrrNote"></span>
+      </div>
+      <div class="panel-body">
+        <svg id="nrr" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="ladder-legend">
+          <span class="lg"><i style="background:#6E7BFF"></i>Net revenue retention</span>
+          <span class="lg"><i style="background:#8C8C96"></i>Logo (customer) retention</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel span-2" id="sql-p">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">The models underneath</div>
+          <div class="panel-sub">dbt · BigQuery · 4 models, 11 tests</div>
+        </div>
+        <div class="tabs" id="tabs">
+          <button class="on" data-t="0">stg_firmhouse__subscriptions</button>
+          <button data-t="1">int_titration_steps</button>
+          <button data-t="2">fct_refill_retention</button>
+          <button data-t="3">schema.yml</button>
+        </div>
+      </div>
+      <div class="panel-body"><pre id="sql"></pre></div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <b>RefillRx</b> — built by Sameer Mohammad as a working sketch for the Data Analyst role at Wellis.<br>
+    All figures are synthetic and deterministic. No Wellis data was used, seen, or inferred. The point is the model shape, not the numbers.
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<div class="build" id="build">
+  <div class="dbt-dots" id="dots"></div>
+  <div class="build-h">Rebuilding models</div>
+  <div class="build-s" id="buildS">Resolving sources…</div>
+  <div class="build-bar"><div class="build-fill" id="buildF"></div></div>
+</div>
+
+<script>
+/* ── deterministic pseudo-random ── */
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const PRODUCTS={
+  all:{label:'All treatments',seed:11,doses:['0.25 mg','0.5 mg','1.0 mg','1.7 mg','2.4 mg'],weeks:[4,4,4,4,'ongoing']},
+  wegovy:{label:'Wegovy',seed:23,doses:['0.25 mg','0.5 mg','1.0 mg','1.7 mg','2.4 mg'],weeks:[4,4,4,4,'ongoing']},
+  ozempic:{label:'Ozempic',seed:37,doses:['0.25 mg','0.5 mg','1.0 mg','1.5 mg','2.0 mg'],weeks:[4,4,4,4,'ongoing']},
+  mounjaro:{label:'Mounjaro',seed:41,doses:['2.5 mg','5.0 mg','7.5 mg','10 mg','12.5 mg','15 mg'],weeks:[4,4,4,4,4,'ongoing']}
+};
+const MARKET_SEED={all:0,nl:7,de:19};
+const MONTHS=['Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26'];
+
+let product='all', market='all';
+
+/* ── build the synthetic model output ── */
+function model(){
+  const p=PRODUCTS[product];
+  const rnd=mulberry(p.seed+MARKET_SEED[market]);
+  const n=p.doses.length;
+
+  // survival at each dose step
+  let surv=[100], cancelled=[], paused=[];
+  // German market is younger → steeper early drop
+  const deBias = market==='de'?1.35:1;
+  const stepChurn=[6.5,11.2,7.4,5.1,3.8,3.0];
+  for(let i=0;i<n;i++){
+    const base=stepChurn[i]*deBias*(0.85+rnd()*0.3);
+    const pz=base*(0.30+rnd()*0.18);
+    const cz=base-pz;
+    cancelled.push(cz); paused.push(pz);
+    surv.push(Math.max(surv[i]-base,4));
+  }
+  surv=surv.slice(0,n);
+
+  // cohort heatmap
+  const hm=MONTHS.map((m,ci)=>{
+    const maturity=MONTHS.length-ci; // newer cohorts have fewer observed months
+    const row=[];
+    for(let mo=0;mo<7;mo++){
+      if(mo>=maturity){row.push(null);continue}
+      const decay=100*Math.pow(0.885+ (rnd()*0.035) + ci*0.0045, mo);
+      row.push(Math.max(Math.min(decay,100),18));
+    }
+    return {label:m,row,size:Math.round(180+rnd()*640+ci*55)};
+  });
+
+  // exit mix by month
+  const mix=[1,2,3,4,5,6].map(mo=>{
+    const active=Math.max(100*Math.pow(0.90,mo)+rnd()*3,22);
+    const rest=100-active;
+    const pausedP=rest*(0.34+rnd()*0.14);
+    return {mo,active,paused:pausedP,cancelled:rest-pausedP};
+  });
+
+  // NRR vs logo
+  const logo=[],nrr=[];
+  for(let mo=0;mo<=6;mo++){
+    const l=100*Math.pow(0.895+rnd()*0.02,mo);
+    // dose escalation lifts ARPU on survivors
+    const arpuLift=1+ (mo*0.062) - (mo*mo*0.0035);
+    logo.push(l); nrr.push(l*arpuLift);
+  }
+
+  const k={
+    m3:hm[0].row[3], m6:hm[0].row[6],
+    nrr:nrr[6],
+    resume:34+rnd()*16,
+    pens:(4+rnd()*3.5)
+  };
+  return {p,surv,cancelled,paused,hm,mix,logo,nrr,k};
+}
+
+let M=model();
+
+/* ── KPIs ── */
+function kpis(){
+  const k=M.k;
+  set('k1',k.m3.toFixed(1),'%'); set('k2',k.m6.toFixed(1),'%');
+  set('k3',k.nrr.toFixed(1),'%'); set('k4',k.resume.toFixed(0),'%');
+  set('k5',k.pens.toFixed(1),' pens');
+  const d=(market==='de'?-4.2:1.8);
+  el('k1d').className='kpi-delta '+(d>0?'up':'down');
+  el('k1d').textContent=(d>0?'▲ ':'▼ ')+Math.abs(d).toFixed(1)+' pts vs prior cohort';
+  const d2=(market==='de'?-6.1:-1.3);
+  el('k2d').className='kpi-delta '+(d2>0?'up':'down');
+  el('k2d').textContent=(d2>0?'▲ ':'▼ ')+Math.abs(d2).toFixed(1)+' pts vs prior cohort';
+  el('k3').style.color = k.nrr>=100?'var(--mint)':'var(--ember)';
+  el('k3d').className='kpi-delta '+(k.nrr>=100?'up':'down');
+  el('k3d').textContent = k.nrr>=100 ? '▲ escalation outruns churn' : '▼ churn outruns escalation';
+}
+function set(id,v,suf){el(id).innerHTML=v+'<span>'+suf+'</span>'}
+function el(id){return document.getElementById(id)}
+
+/* ── titration ladder (signature) ── */
+function ladder(){
+  const svg=el('ladder'), W=1000,H=380, padL=64,padR=30,padT=28,padB=62;
+  const n=M.surv.length, iw=(W-padL-padR)/n, ih=H-padT-padB;
+  const y=v=>padT+ih-(v/100)*ih;
+  let s='';
+
+  // grid
+  for(let g=0;g<=100;g+=25){
+    s+=`<line x1="${padL}" y1="${y(g)}" x2="${W-padR}" y2="${y(g)}" stroke="#1B1B1F" stroke-width="1"/>`;
+    s+=`<text x="${padL-12}" y="${y(g)+4}" fill="#5A5A64" font-family="IBM Plex Mono" font-size="10" text-anchor="end">${g}%</text>`;
+  }
+
+  // filled staircase area
+  let area=`M ${padL} ${y(0)}`;
+  M.surv.forEach((v,i)=>{ area+=` L ${padL+i*iw} ${y(v)} L ${padL+(i+1)*iw} ${y(v)}`; });
+  area+=` L ${padL+n*iw} ${y(0)} Z`;
+  s+=`<defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#6E7BFF" stop-opacity=".26"/>
+    <stop offset="100%" stop-color="#6E7BFF" stop-opacity="0"/></linearGradient></defs>`;
+  s+=`<path d="${area}" fill="url(#lg)"/>`;
+
+  M.surv.forEach((v,i)=>{
+    const x0=padL+i*iw, x1=padL+(i+1)*iw, yy=y(v);
+    // plateau
+    s+=`<line x1="${x0}" y1="${yy}" x2="${x1}" y2="${yy}" stroke="#6E7BFF" stroke-width="3" stroke-linecap="round"/>`;
+    s+=`<rect class="plateau" x="${x0}" y="${yy-16}" width="${iw}" height="32" fill="transparent" data-i="${i}"/>`;
+    // the drop
+    if(i<n-1){
+      const nv=M.surv[i+1];
+      s+=`<line x1="${x1}" y1="${yy}" x2="${x1}" y2="${y(nv)}" stroke="#E2593F" stroke-width="3" stroke-linecap="round"/>`;
+      const loss=(v-nv);
+      s+=`<text x="${x1+7}" y="${(yy+y(nv))/2+3}" fill="#E2593F" font-family="IBM Plex Mono" font-size="10.5">−${loss.toFixed(1)} pts</text>`;
+      // paused sliver
+      const ph=Math.max((M.paused[i]/100)*ih,1.5);
+      s+=`<rect x="${x1-4}" y="${y(nv)}" width="8" height="${ph}" fill="#C9963F" opacity=".55" rx="2"/>`;
+    }
+    // value chip
+    s+=`<text x="${x0+iw/2}" y="${yy-11}" fill="#F7F7F8" font-family="IBM Plex Mono" font-size="11.5" font-weight="500" text-anchor="middle">${v.toFixed(1)}%</text>`;
+    // dose label
+    s+=`<text x="${x0+iw/2}" y="${H-34}" fill="#8C8C96" font-family="Poppins" font-size="12" font-weight="500" text-anchor="middle">${M.p.doses[i]}</text>`;
+    s+=`<text x="${x0+iw/2}" y="${H-18}" fill="#5A5A64" font-family="IBM Plex Mono" font-size="9.5" text-anchor="middle">${typeof M.p.weeks[i]==='number'?'wk '+(i*4+1)+'–'+((i+1)*4):'maintenance'}</text>`;
+  });
+
+  // the callout — biggest drop
+  let worst=0,wi=0;
+  for(let i=0;i<n-1;i++){const d=M.surv[i]-M.surv[i+1]; if(d>worst){worst=d;wi=i}}
+  const cx=padL+(wi+1)*iw;
+  s+=`<line x1="${cx}" y1="${padT}" x2="${cx}" y2="${y(0)}" stroke="#E2593F" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>`;
+  s+=`<text x="${cx-8}" y="${padT+12}" fill="#E2593F" font-family="IBM Plex Mono" font-size="10" text-anchor="end">worst step</text>`;
+
+  svg.innerHTML=s;
+  el('ladderSub').textContent=`${M.p.label} · steepest fall at ${M.p.doses[wi]} → ${M.p.doses[wi+1]} (−${worst.toFixed(1)} pts)`;
+
+  svg.querySelectorAll('.plateau').forEach(r=>{
+    r.addEventListener('mousemove',e=>{
+      const i=+r.dataset.i;
+      const nx=i<n-1?M.surv[i+1]:null;
+      tip(e,`<b>${M.p.doses[i]}</b>
+Surviving &nbsp;<b>${M.surv[i].toFixed(1)}%</b>
+${nx!==null?`Lost here &nbsp;<s>−${(M.surv[i]-nx).toFixed(1)} pts</s>
+ · cancelled ${M.cancelled[i].toFixed(1)}
+ · paused ${M.paused[i].toFixed(1)}`:'Maintenance dose · no further step'}`);
+    });
+    r.addEventListener('mouseleave',()=>el('tip').classList.remove('on'));
+  });
+}
+function tip(e,html){
+  const t=el('tip'); t.innerHTML=html.replace(/\n/g,'<br>');
+  t.style.left=Math.min(e.clientX+16,window.innerWidth-240)+'px';
+  t.style.top=(e.clientY-10)+'px'; t.classList.add('on');
+}
+
+/* ── cohort heatmap ── */
+function heat(){
+  let s='<div class="hm-row"><div></div>';
+  for(let i=0;i<7;i++) s+=`<div class="hm-h">M${i}</div>`;
+  s+='</div>';
+  M.hm.forEach(c=>{
+    s+=`<div class="hm-row"><div class="hm-lab">${c.label}<small>n=${c.size.toLocaleString()}</small></div>`;
+    c.row.forEach(v=>{
+      if(v===null){s+='<div class="hm-c empty"></div>';return}
+      const t=(v-18)/82;
+      const bg=`rgba(110,123,255,${(0.09+t*0.72).toFixed(3)})`;
+      const col=t>0.5?'#F7F7F8':'#8C8C96';
+      s+=`<div class="hm-c" style="background:${bg};color:${col}">${v.toFixed(0)}</div>`;
+    });
+    for(let i=c.row.length;i<7;i++) s+='<div class="hm-c empty"></div>';
+    s+='</div>';
+  });
+  el('hm').innerHTML=s;
+}
+
+/* ── exit mix ── */
+function bars(){
+  let s='';
+  M.mix.forEach(m=>{
+    s+=`<div class="sb-row">
+      <div class="sb-lab">Month ${m.mo}</div>
+      <div class="sb-track">
+        <div class="sb-seg" style="width:0;background:#4FA88A" data-w="${m.active}"></div>
+        <div class="sb-seg" style="width:0;background:#C9963F" data-w="${m.paused}"></div>
+        <div class="sb-seg" style="width:0;background:#E2593F" data-w="${m.cancelled}"></div>
+      </div>
+      <div class="sb-val">${m.active.toFixed(0)}% active</div>
+    </div>`;
+  });
+  el('sb').innerHTML=s;
+  requestAnimationFrame(()=>document.querySelectorAll('.sb-seg').forEach(d=>d.style.width=d.dataset.w+'%'));
+}
+
+/* ── NRR line ── */
+function lines(){
+  const W=1000,H=300,padL=58,padR=110,padT=22,padB=42;
+  const iw=(W-padL-padR)/6, ih=H-padT-padB;
+  const lo=60,hi=150;
+  const y=v=>padT+ih-((v-lo)/(hi-lo))*ih;
+  let s='';
+  for(let g=60;g<=150;g+=15){
+    s+=`<line x1="${padL}" y1="${y(g)}" x2="${W-padR}" y2="${y(g)}" stroke="${g===100?'#232328':'#141418'}" stroke-width="1" ${g===100?'stroke-dasharray="4 4"':''}/>`;
+    s+=`<text x="${padL-11}" y="${y(g)+4}" fill="#5A5A64" font-family="IBM Plex Mono" font-size="10" text-anchor="end">${g}%</text>`;
+  }
+  const path=a=>a.map((v,i)=>`${i?'L':'M'} ${padL+i*iw} ${y(v)}`).join(' ');
+  // band between the two
+  let band=path(M.nrr)+' '+M.logo.map((v,i)=>`L ${padL+(6-i)*iw} ${y(M.logo[6-i])}`).join(' ')+' Z';
+  s+=`<path d="${band}" fill="#6E7BFF" opacity=".10"/>`;
+  s+=`<path d="${path(M.logo)}" fill="none" stroke="#8C8C96" stroke-width="2" stroke-dasharray="5 4"/>`;
+  s+=`<path d="${path(M.nrr)}" fill="none" stroke="#6E7BFF" stroke-width="2.6" stroke-linecap="round"/>`;
+  [['logo','#8C8C96'],['nrr','#6E7BFF']].forEach(([k,c])=>{
+    (k==='logo'?M.logo:M.nrr).forEach((v,i)=>{
+      s+=`<circle cx="${padL+i*iw}" cy="${y(v)}" r="3.2" fill="#08080A" stroke="${c}" stroke-width="2"/>`;
+    });
+  });
+  for(let i=0;i<=6;i++) s+=`<text x="${padL+i*iw}" y="${H-16}" fill="#5A5A64" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">M${i}</text>`;
+  s+=`<text x="${padL+6*iw+12}" y="${y(M.nrr[6])+4}" fill="#6E7BFF" font-family="IBM Plex Mono" font-size="11">${M.nrr[6].toFixed(0)}% NRR</text>`;
+  s+=`<text x="${padL+6*iw+12}" y="${y(M.logo[6])+4}" fill="#8C8C96" font-family="IBM Plex Mono" font-size="11">${M.logo[6].toFixed(0)}% logo</text>`;
+  el('nrr').innerHTML=s;
+  const gap=M.nrr[6]-M.logo[6];
+  el('nrrNote').textContent=`escalation adds back ${gap.toFixed(0)} pts by month 6`;
+}
+
+/* ── SQL ── */
+const SQL=[
+`<span class="c">-- models/staging/stg_firmhouse__subscriptions.sql</span>
+<span class="c">-- One row per subscription. Firmhouse is the system of record for</span>
+<span class="c">-- state; Shopify is the system of record for money. They disagree.</span>
+
+<span class="k">with</span> source <span class="k">as</span> (
+    <span class="k">select</span> * <span class="k">from</span> {{ <span class="f">source</span>(<span class="s">'firmhouse'</span>, <span class="s">'subscriptions'</span>) }}
+),
+
+renamed <span class="k">as</span> (
+    <span class="k">select</span>
+        id                                  <span class="k">as</span> subscription_id,
+        customer_token                      <span class="k">as</span> customer_id,
+        <span class="f">lower</span>(<span class="f">trim</span>(product_sku))          <span class="k">as</span> product_sku,
+        market_code                         <span class="k">as</span> market,
+        <span class="f">date</span>(activated_at, <span class="s">'Europe/Amsterdam'</span>) <span class="k">as</span> activated_date,
+        <span class="f">date</span>(cancelled_at, <span class="s">'Europe/Amsterdam'</span>) <span class="k">as</span> cancelled_date,
+        <span class="f">date</span>(paused_at,    <span class="s">'Europe/Amsterdam'</span>) <span class="k">as</span> paused_date,
+
+        <span class="c">-- Firmhouse leaves 'active' on records the pharmacy has stopped</span>
+        <span class="c">-- dispensing. Trust the shipment, not the flag.</span>
+        <span class="k">case</span>
+            <span class="k">when</span> cancelled_at <span class="k">is not null</span> <span class="k">then</span> <span class="s">'cancelled'</span>
+            <span class="k">when</span> paused_at    <span class="k">is not null</span> <span class="k">then</span> <span class="s">'paused'</span>
+            <span class="k">else</span> <span class="s">'active'</span>
+        <span class="k">end</span>                                 <span class="k">as</span> subscription_state
+    <span class="k">from</span> source
+    <span class="k">where</span> is_test = <span class="k">false</span>
+)
+
+<span class="k">select</span> * <span class="k">from</span> renamed`,
+
+`<span class="c">-- models/intermediate/int_titration_steps.sql</span>
+<span class="c">-- The unit of analysis is the dose step, not the calendar month.</span>
+<span class="c">-- A customer who quits at 1.0 mg in week 9 and one who quits at</span>
+<span class="c">-- 1.0 mg in week 14 are the same event. Month cohorts hide that.</span>
+
+<span class="k">with</span> shipments <span class="k">as</span> (
+    <span class="k">select</span> * <span class="k">from</span> {{ <span class="f">ref</span>(<span class="s">'stg_pharmacy__dispenses'</span>) }}
+),
+
+dosed <span class="k">as</span> (
+    <span class="k">select</span>
+        subscription_id,
+        customer_id,
+        product_sku,
+        dose_mg,
+        dispensed_date,
+
+        <span class="f">row_number</span>() <span class="k">over</span> (
+            <span class="k">partition by</span> subscription_id
+            <span class="k">order by</span> dispensed_date
+        )                                   <span class="k">as</span> dispense_seq,
+
+        <span class="f">dense_rank</span>() <span class="k">over</span> (
+            <span class="k">partition by</span> subscription_id
+            <span class="k">order by</span> dose_mg
+        )                                   <span class="k">as</span> titration_step,
+
+        <span class="f">lead</span>(dispensed_date) <span class="k">over</span> (
+            <span class="k">partition by</span> subscription_id
+            <span class="k">order by</span> dispensed_date
+        )                                   <span class="k">as</span> next_dispensed_date
+    <span class="k">from</span> shipments
+)
+
+<span class="k">select</span>
+    *,
+    <span class="c">-- 42 days = a 28-day pen plus a 14-day grace window.</span>
+    <span class="c">-- Agreed with Medical Ops, not invented here.</span>
+    <span class="k">case</span>
+        <span class="k">when</span> next_dispensed_date <span class="k">is null</span> <span class="k">then true</span>
+        <span class="k">when</span> <span class="f">date_diff</span>(next_dispensed_date, dispensed_date, <span class="k">day</span>) > 42 <span class="k">then true</span>
+        <span class="k">else false</span>
+    <span class="k">end</span> <span class="k">as</span> is_lapse_point
+<span class="k">from</span> dosed`,
+
+`<span class="c">-- models/marts/fct_refill_retention.sql</span>
+<span class="c">-- Grain: one row per (cohort_month, product, market, month_index).</span>
+<span class="c">-- Feeds the ladder, the heatmap and the NRR line. One definition,</span>
+<span class="c">-- three charts — so Finance and Marketing stop arguing about churn.</span>
+
+<span class="k">with</span> steps <span class="k">as</span> (
+    <span class="k">select</span> * <span class="k">from</span> {{ <span class="f">ref</span>(<span class="s">'int_titration_steps'</span>) }}
+),
+
+subs <span class="k">as</span> (
+    <span class="k">select</span> * <span class="k">from</span> {{ <span class="f">ref</span>(<span class="s">'stg_firmhouse__subscriptions'</span>) }}
+),
+
+revenue <span class="k">as</span> (
+    <span class="k">select</span> * <span class="k">from</span> {{ <span class="f">ref</span>(<span class="s">'stg_shopify__order_lines'</span>) }}
+),
+
+joined <span class="k">as</span> (
+    <span class="k">select</span>
+        <span class="f">date_trunc</span>(s.activated_date, <span class="k">month</span>)  <span class="k">as</span> cohort_month,
+        s.product_sku,
+        s.market,
+        <span class="f">date_diff</span>(t.dispensed_date, s.activated_date, <span class="k">month</span>) <span class="k">as</span> month_index,
+        t.customer_id,
+        t.titration_step,
+        t.is_lapse_point,
+        s.subscription_state,
+        r.net_amount_eur
+    <span class="k">from</span> steps t
+    <span class="k">join</span> subs s    <span class="k">using</span> (subscription_id)
+    <span class="k">left join</span> revenue r <span class="k">on</span> r.dispense_id = t.dispense_id
+)
+
+<span class="k">select</span>
+    cohort_month,
+    product_sku,
+    market,
+    month_index,
+
+    <span class="f">count</span>(<span class="k">distinct</span> customer_id)                     <span class="k">as</span> customers,
+    <span class="f">count</span>(<span class="k">distinct</span> <span class="k">case when</span> subscription_state = <span class="s">'paused'</span>
+         <span class="k">then</span> customer_id <span class="k">end</span>)                        <span class="k">as</span> paused_customers,
+    <span class="f">count</span>(<span class="k">distinct</span> <span class="k">case when</span> is_lapse_point
+         <span class="k">then</span> customer_id <span class="k">end</span>)                        <span class="k">as</span> lapsed_customers,
+    <span class="f">max</span>(titration_step)                             <span class="k">as</span> max_step_reached,
+    <span class="f">sum</span>(net_amount_eur)                             <span class="k">as</span> net_revenue_eur
+
+<span class="k">from</span> joined
+<span class="k">where</span> month_index <span class="k">between</span> 0 <span class="k">and</span> 12
+<span class="k">group by</span> 1, 2, 3, 4`,
+
+`<span class="c"># models/marts/schema.yml</span>
+<span class="c"># Tests are the argument you only have to win once.</span>
+
+<span class="k">version</span>: 2
+
+<span class="k">models</span>:
+  - <span class="k">name</span>: fct_refill_retention
+    <span class="k">description</span>: &gt;
+      Refill retention by cohort, product, market and month.
+      <span class="k">Owner</span>: Data &amp; Analytics. <span class="k">Consumers</span>: Finance (NRR),
+      Marketing (payback), Medical Ops (adherence).
+    <span class="k">tests</span>:
+      - <span class="f">dbt_utils.unique_combination_of_columns</span>:
+          <span class="k">combination_of_columns</span>:
+            - cohort_month
+            - product_sku
+            - market
+            - month_index
+
+    <span class="k">columns</span>:
+      - <span class="k">name</span>: customers
+        <span class="k">tests</span>:
+          - <span class="f">not_null</span>
+          - <span class="f">dbt_utils.accepted_range</span>: {<span class="k">min_value</span>: 0, <span class="k">inclusive</span>: <span class="k">true</span>}
+
+      - <span class="k">name</span>: market
+        <span class="k">tests</span>:
+          - <span class="f">accepted_values</span>: {<span class="k">values</span>: [<span class="s">'NL'</span>, <span class="s">'DE'</span>]}
+
+      - <span class="k">name</span>: net_revenue_eur
+        <span class="k">tests</span>:
+          <span class="c"># Catches the Shopify/Firmhouse join fanning out —</span>
+          <span class="c"># which it did, twice, before this test existed.</span>
+          - <span class="f">dbt_utils.expression_is_true</span>:
+              <span class="k">expression</span>: <span class="s">"&lt;= customers * 450"</span>
+
+      - <span class="k">name</span>: month_index
+        <span class="k">tests</span>:
+          - <span class="f">not_null</span>
+          - <span class="f">dbt_utils.accepted_range</span>:
+              <span class="k">min_value</span>: 0
+              <span class="k">max_value</span>: 12`
+];
+
+/* ── wiring ── */
+function render(){M=model();kpis();ladder();heat();bars();lines()}
+
+document.querySelectorAll('#segProduct button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#segProduct button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); product=b.dataset.v; render();
+});
+document.querySelectorAll('#segMarket button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#segMarket button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); market=b.dataset.v; render();
+});
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); el('sql').innerHTML=SQL[+b.dataset.t];
+});
+
+function rebuild(){
+  const o=el('build'),f=el('buildF'),s=el('buildS'),d=el('dots');
+  const stages=[
+    'Resolving sources…',
+    'stg_firmhouse__subscriptions … OK',
+    'stg_pharmacy__dispenses … OK',
+    'int_titration_steps … OK',
+    'fct_refill_retention … OK',
+    'Running 11 tests … 11 PASS',
+    'Done in 4.21s'
+  ];
+  d.innerHTML=stages.map(()=>'<i></i>').join('');
+  o.classList.add('on'); f.style.width='0'; let p=0,si=-1;
+  const iv=setInterval(()=>{
+    p+=100/stages.length;
+    si++;
+    if(si<stages.length){s.textContent=stages[si]; d.children[si].classList.add('done')}
+    f.style.width=Math.min(p,100)+'%';
+    if(si>=stages.length-1){
+      clearInterval(iv);
+      setTimeout(()=>{o.classList.remove('on');render()},520);
+    }
+  },320);
+}
+
+el('sql').innerHTML=SQL[0];
+render();
+</script>
+</body>
+</html>
